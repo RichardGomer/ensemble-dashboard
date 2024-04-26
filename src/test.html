@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EnsembleIOT Simple Web Client</title>
+    <link rel="stylesheet" href="./test.css" type="text/css" />
+    <style type="text/css">
+        .body {
+            width: auto;
+        }
+    </style>
+    <script src="//code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        $().ready(() => {
+
+             import('./state/EnsembleConnector').then((iot) => {
+                console.log(iot);
+                let conn = new iot.EnsembleConnector('http://127.0.0.1:31075/');
+                conn.ready().then(() => {
+                    console.log("Ensemble connection is ready");
+
+                    // Fetch some temperature data
+                    conn.send('global.context', 'getContext', {
+                        'field': 'spa-temp'
+                    }).then((reply) => {
+                        console.log("Got a reply", reply);
+                    }, (rejected) => {
+                        console.log("Got an exception", rejected);
+                    });
+
+                });
+             });
+
+        
+        });
+    </script>
+</body>
+
+</html>

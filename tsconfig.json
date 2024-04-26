@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "target": "es2017",
+        "moduleResolution":"node",
+        "paths": {
+            "*": ["./node_modules/*"]
+        }
+    }
+}
