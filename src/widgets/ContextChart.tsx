@@ -22,7 +22,8 @@ type ContextChartParams = {
     field: string,
     numValues: number,
     title: string,
-    chartType: 'bar' | 'line'
+    chartType: 'bar' | 'line',
+    lineType: string // The lineType to use for the recharts <Line> element: https://recharts.org/en-US/api/Line
 }
 
 type ContextChartWidgetInfo = BaseWidgetInfo & {
@@ -71,8 +72,8 @@ const ContextChart = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextChartWi
                     <XAxis dataKey="dateStr" />
                     <YAxis />
                     <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="value" stroke="#111111" />
+                    
+                    <Line type={widget.params.lineType} dataKey="value" stroke="#111111" dot={false} />
                     <ReferenceLine x={nowStr} label="Now" />
                 </LineChart>
 

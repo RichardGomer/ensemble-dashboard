@@ -1,7 +1,9 @@
-import { React, Suspense } from "react";
+import { Suspense } from "react";
 import { PrimitiveAtom, Atom, atom, useAtom } from "jotai";
 
-import { widgetAtomsAtom, widgetCountAtom, WidgetInfo } from "../state/WidgetState";
+import { widgetAtomsAtom, widgetCountAtom } from "../state/WidgetState";
+
+import { WidgetInfo } from "../widgets/WidgetTypes";
 
 import "./styles.css";
 import { globalWidgetController } from "../state/WidgetController";
@@ -79,6 +81,6 @@ const Dashboard = () => {
             </Grid>
         </div>
     </Suspense>
-});
+};
 
 export default Dashboard;

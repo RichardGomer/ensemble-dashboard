@@ -3,8 +3,8 @@
  */
 
 interface BaseWidgetInfo {
-    id: string,
-    type: never,
+    //id: string,
+    type: string,
     params: any, // Arbitrary options
     state: any, // Arbitrary widget state,
     refresh: number, // Interval that this widget should be refreshed at

@@ -9,7 +9,7 @@ import { Button, CardActions, Typography } from "@mui/material";
 
 
 
-const DashItem = ({ title, children, width }) => {
+const DashItem = ({ title, children, width } : { title: String, children: Element, width: Number }) => {
 
 if(!width) {
     width = 1;

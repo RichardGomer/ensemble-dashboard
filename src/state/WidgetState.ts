@@ -44,19 +44,92 @@ let initialState: WidgetInfo[] = [
         refreshing: false
     },
     {
+        type: 'contextview',
+        params: {
+            device: 'global.context',
+            field: 'temp-office',
+            title: 'Temp Office',
+            pre: '',
+            post: '°C'
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 300,
+        refreshing: false
+    },
+    {
+        type: 'contextview',
+        params: {
+            device: 'global.context',
+            field: 'temp-lounge',
+            title: 'Temp Lounge',
+            pre: '',
+            post: '°C'
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 300,
+        refreshing: false
+    },
+    {
+        type: 'contextview',
+        params: {
+            device: 'global.context',
+            field: 'temp-landing',
+            title: 'Temp Landing',
+            pre: '',
+            post: '°C'
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 300,
+        refreshing: false
+    },
+
+    {
         type: 'contextchart',
         params: {
             device: 'global.context',
             field: 'electariff',
             title: 'Electricity Price',
             chartType: 'line',
+            lineType: 'stepAfter',
             numValues: 48
         },
         state: {},
         refreshed: 0,
         refresh: 300,
         refreshing: false
-    }
+    },
+    {
+        type: 'contextchart',
+        params: {
+            device: 'global.context',
+            field: 'solcast',
+            title: 'Solcast',
+            chartType: 'line',
+            lineType: 'stepAfter',
+            numValues: 48
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 300,
+        refreshing: false
+    },
+    {
+        type: 'contextview',
+        params: {
+            device: 'global.context',
+            field: 'battery.soc',
+            title: 'Battery SOC',
+            pre: '',
+            post: 'KWh'
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 300,
+        refreshing: false
+    },
 ];
 
 /**
