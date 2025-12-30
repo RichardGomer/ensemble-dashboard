@@ -9,12 +9,15 @@ import { BaseWidgetInfo, WidgetInfo } from "./WidgetTypes";
 import { ContextViewFactory } from "./ContextView";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+import Exception from "./Exception";
+import { ReactNode } from "react";
 
 
 
 type ContextChartState = {
     value: { time: number, value: number }[]
-    
+    error: boolean,
+    errorStr: string
 }
 
 type ContextChartParams = {
@@ -51,7 +54,7 @@ const ContextChart = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextChartWi
     const title = widget.params.title
 
 
-    let chart : JSX.Element;
+    let chart : ReactNode;
     if(widget.state.value) {
 
         console.log("Values", widget.state.value);
@@ -74,11 +77,12 @@ const ContextChart = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextChartWi
                     <Tooltip />
                     
                     <Line type={widget.params.lineType} dataKey="value" stroke="#111111" dot={false} />
-                    <ReferenceLine x={nowStr} label="Now" />
                 </LineChart>
 
             </ResponsiveContainer>
         );
+    } else if(widget.state.error) {
+        chart = <Exception message={widget.state.errorStr} />
     } else {
         chart = <CircularProgress />
     }
@@ -100,19 +104,22 @@ class ContextChartFactory implements WidgetFactory  {
         return ContextChart({ widgetAtom, factory: this });
     }
 
-    updateState(widget: ContextChartWidgetInfo, patchState: (newState: ContextChartState) => void) {
+    updateState(widget: ContextChartWidgetInfo, patchState: (newState: Partial<ContextChartState>) => void) {
 
         let p = widget.params;
 
-        ensembleClient.send(p.device, 'getContext', { 'field': p.field, 'num': p.numValues }).then((reply) => {
-            console.log("Received context", reply.args);
-            if(reply.args.values.length > 0)
-                patchState({value: reply.args.values});
-            else
-                patchState({value: []});
-        }, (rejected) => {
-            console.error("Got an exception", rejected);
-        });
+        ensembleClient.send(p.device, 'getContext', { 'field': p.field, 'num': p.numValues })
+            .then((reply) => {
+                console.debug("Received context", reply.args);
+                if(reply.args.values.length > 0)
+                    patchState({value: reply.args.values});
+                else
+                    patchState({value: []});
+            })
+            .catch((rejected) => {
+                //console.error("Got an exception", rejected);
+                patchState({error: true, errorStr: rejected.args.message});
+            });
 
     }
 

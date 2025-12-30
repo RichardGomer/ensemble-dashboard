@@ -5,15 +5,16 @@ import { widgetAtomsAtom, widgetCountAtom } from "../state/WidgetState";
 
 import { WidgetInfo } from "../widgets/WidgetTypes";
 
-import "./styles.css";
 import { globalWidgetController } from "../state/WidgetController";
 
-import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
+import Grid from '@mui/material/Grid';
 
+import { AppBar, Box, Paper, Toolbar, Typography } from "@mui/material";
 
 /**
  * Import all our different widgets
  */
+
 import { ContextViewFactory } from "../widgets/ContextView";
 import { ContextChartFactory } from "../widgets/ContextChart";
 import { ToggleSwitchFactory } from "../widgets/ToggleSwitch";
@@ -25,17 +26,6 @@ globalWidgetController.registerType(new ContextChartFactory());
 globalWidgetController.registerType(new ToggleSwitchFactory());
 
 
-
-
-const WidgetCounter = () => {
-    const [wcount] = useAtom(widgetCountAtom);
-
-    return (
-        <>
-            {wcount} widgets
-        </>
-    )
-}
 
 const WidgetList = () => {
     const [widgetAtoms] = useAtom(widgetAtomsAtom);
@@ -61,6 +51,10 @@ const WidgetHolder = ( { widgetAtom } : { widgetAtom: Atom<WidgetInfo>, key: str
     return <>{component}</>
 }
 
+import DashStatus from "./DashStatus";
+
+import HouseIcon from '@mui/icons-material/Home';
+
 const Dashboard = () => {
 
     const [connection] = useAtom(ConnectionStateAtom);
@@ -69,18 +63,31 @@ const Dashboard = () => {
     if(connection.connected) {
         body = <WidgetList />;
     } else {
-        body = <>Connecting to Ensemble Mesh</>;
+        body = <>{connection.error ? connection.errorStr : "Connecting to Ensemble Mesh"}</>;
     }
 
     return <Suspense fallback="Loading...">
         <div className="App">
-            <WidgetCounter />
-            <Grid container spacing={2}>
-                
-                {body}
+            
+            <Paper sx={{"padding": "10px", "& > *": { margin: "10px"}}}>
+            <AppBar position="static">
+                <Toolbar>
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <HouseIcon /> 7 Chapel Close
+                        </Box>
+                    </Typography>
+                    <DashStatus />
+                </Toolbar>
+            </AppBar>
+            <Grid container spacing={1}>
+                    {body}
             </Grid>
+            </Paper>
         </div>
-    </Suspense>
+    </Suspense>;
 };
+
+
 
 export default Dashboard;

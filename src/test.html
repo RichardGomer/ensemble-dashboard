@@ -20,17 +20,7 @@
                 console.log(iot);
                 let conn = new iot.EnsembleConnector('http://127.0.0.1:31075/');
                 conn.ready().then(() => {
-                    console.log("Ensemble connection is ready");
-
-                    // Fetch some temperature data
-                    conn.send('global.context', 'getContext', {
-                        'field': 'spa-temp'
-                    }).then((reply) => {
-                        console.log("Got a reply", reply);
-                    }, (rejected) => {
-                        console.log("Got an exception", rejected);
-                    });
-
+                    console.debug("Ensemble connection is ready");
                 });
              });
 

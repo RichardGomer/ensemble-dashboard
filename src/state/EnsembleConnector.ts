@@ -32,45 +32,57 @@ class EnsembleConnector {
 
     readyPromise : Promise<Boolean>;
 
+    connected : boolean = false;
+    url : string = "";
+    proxyId : string = "";
+
     constructor(wsurl : string) {
 
         this.readyPromise = new Promise((resolve, reject) => {
-            try {
-                this.connect(wsurl, ()=>{resolve(true);});
-            } catch(e) {
-                console.error(e);
-                reject(e);
-            }
+            window.setTimeout(() => {
+                try {
+                    this.connect(wsurl, ()=>{
+                        this.connected = true;
+                        resolve(true);
+                    }, reject);
+                } catch(e) {
+                    console.error("caught exception during connect", e);
+                    reject(e);
+                }
+            }, 100);
         });
-
 
     }
 
     /**
      * Set up the websocket
      */
-    connect(wsurl: string, then) {
+    connect(wsurl: string, then, reject) {
         this.sock = new WebSocket(wsurl);
+
+        this.url = wsurl;
 
         if(this.sock === null) {
             throw "Failed to create websocket";
         }
 
         this.sock.onclose = (e: CloseEvent) : any => {
-            console.log("Websocket was closed");
+            this.connected = false;
+            console.debug("Websocket was closed");
         };
 
         this.sock.onmessage = (m: MessageEvent) => {
-            console.log("Received message", m);
+            console.debug("Received message", m);
             this.receive(m.data);
         };
 
         this.sock.onerror = (e: Event) => {
-            console.log("Websocket error", e);
-            this.sock.close();
+            console.debug("Websocket error", e);
+            reject(e);
         }
 
         this.sock.onopen = (e: Event) => {
+            console.debug("Websocket connected");
             then();
         }
     }
@@ -84,6 +96,29 @@ class EnsembleConnector {
 
     }
 
+    /**
+     * Get the proxy ID once connected, using a promise
+     */
+    private proxyIdResolve: (id: string) => void;
+    private proxyIdPromise: Promise<string> = new Promise<string>((resolve, reject) => {
+        this.proxyIdResolve = resolve;
+
+        if(this.proxyId != '') {
+            resolve(this.proxyId);
+        }
+    });
+
+    getProxyId() : Promise<string>  {
+        return this.proxyIdPromise;
+    }
+
+    setProxyId(id: string) {
+        this.proxyId = id;
+        console.log("Received ensemble proxy information. Proxy ID: " + id);
+        if(this.proxyIdResolve) {
+            this.proxyIdResolve(id);
+        }
+    }
 
     /**
      * Send a command to the endpoint
@@ -94,6 +129,12 @@ class EnsembleConnector {
      * if an exception is received.
      */
     send(target: string, action: string, args: CommandArgs) : Promise<Command> {
+
+        if(!this.connected) {
+            return Promise.reject("Not connected");
+        } else {
+            console.log("Websocket is connected, sending command");
+        }
 
         let cmd : Command = {
             'id': Math.floor(Math.random() * 1000000000000).toString(),
@@ -133,7 +174,7 @@ class EnsembleConnector {
 
 
         if(cmd.action == 'status') {
-            console.log("Received ensemble proxy information. Proxy ID: " + cmd.args.handlerName);
+            this.setProxyId(cmd.args.handlerName);
             return;
         }
 

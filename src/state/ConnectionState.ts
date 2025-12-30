@@ -6,12 +6,18 @@ import { atom, createStore, getDefaultStore } from 'jotai';
 
 type ConnectionState = {
     connected: boolean,
-    proxyId: string
+    url: string,
+    proxyId: string,
+    error: boolean,
+    errorStr: string
 }
 
-let initialState : ConnectionState = {
+let initialState: ConnectionState = {
     connected: false,
-    proxyId: ''
+    url: '',
+    proxyId: '',
+    error: false,
+    errorStr: ''
 }
 
 let ConnectionStateAtom = atom(initialState);
@@ -28,16 +34,44 @@ const defaultStore = getDefaultStore();
 import { EnsembleConnector } from "./EnsembleConnector"
 
 const ensembleClient = new EnsembleConnector('ws://127.0.0.1:31075');
-ensembleClient.ready().then(
-    () => { // Success
-        defaultStore.set(ConnectionStateAtom, (currentState) => {
-            return {
-                ...currentState,
-                connected: true
-            }
-        })
-    }
-);
+
+function updateConn() {
+    defaultStore.set(ConnectionStateAtom, (currentState) => {
+        return {
+            ...currentState,
+            connected: true,
+            url: ensembleClient.url
+        }
+    })
+};
+
+ensembleClient.getProxyId().then( (id) => {
+    defaultStore.set(ConnectionStateAtom, (currentState) => {
+        return {
+            ...currentState,
+            proxyId: id
+        }
+    })
+} );
+
+ensembleClient.ready()
+    .then( // Success
+        () => {
+            updateConn();
+        }
+    )
+    .catch( // Failure
+        (e) => {
+            defaultStore.set(ConnectionStateAtom, (currentState) => {
+                return {
+                    ...currentState,
+                    connected: false,
+                    error: true,
+                    errorStr: "WebSocket connection failed"
+                }
+            })
+        }
+    );
 
 
 export { ConnectionStateAtom, ensembleClient };

@@ -9,6 +9,7 @@ import { ConnectionStateAtom } from './ConnectionState';
 
 import { } from "../widgets/ContextView";
 import { WidgetInfo } from '../widgets/WidgetTypes';
+import { BatteryCharging50, BatteryChargingFull, BedOutlined, Chair, ChairOutlined, DesktopWindows, DesktopWindowsOutlined, HotTub, Park, Park, ParkOutlined, Stairs, StairsOutlined, WaterDrop } from '@mui/icons-material';
 
 
 /**
@@ -19,24 +20,11 @@ let initialState: WidgetInfo[] = [
         type: 'contextview',
         params: {
             device: 'global.context',
-            field: 'spa-temp',
-            title: 'Hot Tub Temp',
-            pre: '',
-            post: '°C',
-        },
-        state: {},
-        refreshed: 0,
-        refresh: 300,
-        refreshing: false
-    },
-    {
-        type: 'contextview',
-        params: {
-            device: 'global.context',
             field: 'outdoor.temperature',
             title: 'Outdoor Temp',
             pre: '',
-            post: '°C'
+            post: '°C',
+            icon: ParkOutlined
         },
         state: {},
         refreshed: 0,
@@ -50,7 +38,8 @@ let initialState: WidgetInfo[] = [
             field: 'temp-office',
             title: 'Temp Office',
             pre: '',
-            post: '°C'
+            post: '°C',
+            icon: DesktopWindowsOutlined
         },
         state: {},
         refreshed: 0,
@@ -64,7 +53,8 @@ let initialState: WidgetInfo[] = [
             field: 'temp-lounge',
             title: 'Temp Lounge',
             pre: '',
-            post: '°C'
+            post: '°C',
+            icon: ChairOutlined
         },
         state: {},
         refreshed: 0,
@@ -78,7 +68,8 @@ let initialState: WidgetInfo[] = [
             field: 'temp-landing',
             title: 'Temp Landing',
             pre: '',
-            post: '°C'
+            post: '°C',
+            icon: BedOutlined
         },
         state: {},
         refreshed: 0,
@@ -87,29 +78,42 @@ let initialState: WidgetInfo[] = [
     },
 
     {
-        type: 'contextchart',
+        type: 'contextview',
         params: {
             device: 'global.context',
-            field: 'electariff',
-            title: 'Electricity Price',
-            chartType: 'line',
-            lineType: 'stepAfter',
-            numValues: 48
+            field: 'HP-TANK_TEMP_T5',
+            title: 'Hot Water Current Temp.',
+            pre: '',
+            post: '°C',
+            icon: WaterDrop,
+            colour: (v) => {
+                var getClr = () => {
+                    if(isNaN(v)) return '';
+                    if(v < 40) return 'blue';
+                    if(v < 50) return 'orange';
+                    return 'red';
+                };
+
+                var c = getClr();
+                console.log("Colouring with value", v, c);
+                return c;
+            }
         },
         state: {},
         refreshed: 0,
-        refresh: 300,
-        refreshing: false
+        refresh: 60,
+        refreshing: false,
     },
+
     {
         type: 'contextchart',
         params: {
             device: 'global.context',
-            field: 'solcast',
-            title: 'Solcast',
+            field: 'outdoor.temperature',
+            title: 'Outdoor Temperature',
             chartType: 'line',
-            lineType: 'stepAfter',
-            numValues: 48
+            lineType: 'step-after',
+            numValues: 24 * 60
         },
         state: {},
         refreshed: 0,
@@ -121,9 +125,33 @@ let initialState: WidgetInfo[] = [
         params: {
             device: 'global.context',
             field: 'battery.soc',
-            title: 'Battery SOC',
+            title: 'Battery SoC',
             pre: '',
-            post: 'KWh'
+            post: 'KWh',
+            icon: BatteryChargingFull,
+            maxCapacity: 8,
+            dps: 2
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 300,
+        refreshing: false
+    },
+        {
+        type: 'contextview',
+        params: {
+            device: 'global.context',
+            field: 'spa-temp',
+            title: 'Hot Tub Temp',
+            icon: HotTub,
+            pre: '',
+            post: '°C',
+            colour: (v) => {
+                    if(isNaN(v)) return '';
+                    if(v < 30) return 'blue';
+                    if(v < 38) return 'orange';
+                    return 'red';
+            }
         },
         state: {},
         refreshed: 0,
@@ -135,9 +163,30 @@ let initialState: WidgetInfo[] = [
 /**
  * Decompose into atoms
  */
-const allWidgetsAtom: Atom<WidgetInfo[]> = atom(initialState);
+const allWidgetsAtom: WritableAtom<WidgetInfo[], [WidgetInfo[]], void> = atom(initialState);
 
-const widgetAtomsAtom: Atom<Atom<WidgetInfo>[]> = splitAtom(allWidgetsAtom);
+// Create individual atoms you can write to
+const createWidgetAtom = (index: number) => 
+    atom(
+        (get) => get(allWidgetsAtom)[index],
+        (get, set, newWidget: WidgetInfo) => {
+            const all = get(allWidgetsAtom);
+            set(allWidgetsAtom, [...all.slice(0, index), newWidget, ...all.slice(index + 1)]);
+        }
+    );
+
+const widgetAtomCache = new Map<number, WritableAtom<WidgetInfo, [WidgetInfo], void>>();
+
+const getWidgetAtom = (index: number) => {
+    if (!widgetAtomCache.has(index)) {
+        widgetAtomCache.set(index, createWidgetAtom(index));
+    }
+    return widgetAtomCache.get(index)!;
+};
+
+const widgetAtomsAtom = atom((get) => 
+    Array.from({ length: get(allWidgetsAtom).length }, (_, i) => getWidgetAtom(i))
+);
 
 const widgetCountAtom = atom((get) => { return get(allWidgetsAtom).length; })
 
@@ -166,7 +215,7 @@ let refreshWidgets = () => {
         let widget = store.get(wAtom);
 
         let due = widget.refreshed + widget.refresh * 1000;
-        console.log("Due at ", due, " now ", now, "Overdue?", due < now, "In progress?", widget.refreshing);
+        //console.log("Due at ", due, " now ", now, "Overdue?", due < now, "In progress?", widget.refreshing);
         if (due < now && !widget.refreshing) {
 
             console.log("Begin refresh");
@@ -174,7 +223,7 @@ let refreshWidgets = () => {
             let factory = globalWidgetController.getFactory(widget.type);
 
             // Refresh the atom
-            ((wAtom : Atom<WidgetInfo>) => { // Trap current value of wAtom in a closure
+            ((wAtom : WritableAtom<WidgetInfo, [WidgetInfo], void>) => { // Trap current value of wAtom in a closure
 
                 let getState = () : WidgetInfo => {
                     return store.get(wAtom);
