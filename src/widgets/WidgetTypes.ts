@@ -9,7 +9,6 @@ interface BaseWidgetInfo {
     state: any, // Arbitrary widget state,
     refresh: number, // Interval that this widget should be refreshed at
     refreshed: number, // Timestamp that this widget was last refreshed
-    refreshing: boolean // Indicate whether the widget is being updated currently
 }
 
 interface WidgetInfoTypeRepo {};

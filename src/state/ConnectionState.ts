@@ -33,7 +33,7 @@ const defaultStore = getDefaultStore();
 
 import { EnsembleConnector } from "./EnsembleConnector"
 
-const ensembleClient = new EnsembleConnector('ws://127.0.0.1:31075');
+const ensembleClient = new EnsembleConnector('ws://10.0.0.8:31075');
 
 function updateConn() {
     defaultStore.set(ConnectionStateAtom, (currentState) => {

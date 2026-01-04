@@ -1,2 +1,5 @@
 Widgets have an element of state, and an element of UI;
 so we're keeping them here.
+
+Widgets need to be imported and registered in Dashboard.tsx
+(and then parcel usually gets its tits in a twist, so delete dist and .parcel-cache)

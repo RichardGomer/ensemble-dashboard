@@ -10,6 +10,7 @@ const root = createRoot(rootElement);
 
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline'; // For baseline styles
+import { ScreenProtector } from "../src/ui/ScreenProtector";
 
 // Define your custom theme
 const theme = createTheme({
@@ -30,7 +31,9 @@ root.render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <ScreenProtector>
       <Dashboard />
+      </ScreenProtector>
     </ThemeProvider>
   </StrictMode>
 );

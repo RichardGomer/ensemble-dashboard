@@ -183,9 +183,12 @@ class EnsembleConnector {
             return;
         }
 
+        console.log("Received command", cmd);
+
         if(cmd.action == '_reply') {
             if(typeof this.replies[cmd.follows] != 'undefined') {
-                this.replies[cmd.follows](cmd);
+                let handler = this.replies[cmd.follows];
+                handler(cmd);
                 delete this.replies[cmd.follows];
 
                 if(this.exceptions[cmd.follows]) {

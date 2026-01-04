@@ -11,6 +11,7 @@ import { ContextViewFactory } from "./ContextView";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import Exception from "./Exception";
 import { ReactNode } from "react";
+import { useTheme } from "@mui/material/styles";
 
 
 
@@ -51,50 +52,76 @@ const ContextChart = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextChartWi
     let round = Math.round(parseFloat(widget.state.value));
     let val = isNaN(round) ? widget.state.value : round.toString();
 
-    const title = widget.params.title
+    const title = widget.params.title;
+
+    // Inside the ContextChart component, after the title declaration:
+    const theme = useTheme();
 
 
-    let chart : ReactNode;
-    if(widget.state.value) {
+    let chart: ReactNode;
+    if (widget.state.value) {
 
-        console.log("Values", widget.state.value);
+        console.log("Values", widget.params.field, widget.state.value);
+
+        const stroke = widget.params.colour || theme.palette.primary.main;
+
+        let formatDate = (d: Date) => {
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        };
 
         widget.state.value.map((v) => {
+
+            if (v.dateStr) return; // Already formatted
+
             let d = new Date(); d.setTime(v.time * 1000);
-            v.dateStr = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+            v.dateStr = formatDate(d);
         });
 
         let dNow = new Date();
-        let nowStr = dNow.getHours().toString().padStart(2, '0') + ':' + dNow.getMinutes().toString().padStart(2, '0');
-        
+        let nowStr = formatDate(dNow);
+
+        let lines = <>
+            <Line type={widget.params.lineType} dataKey="value" stroke={stroke} strokeWidth={2} dot={false} />
+            <ReferenceLine x={Math.floor(Date.now() / 1000)} stroke={theme.palette.error.main} strokeDasharray="3 3" label="Now" />
+        </>
 
         chart = (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={widget.state.value}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="dateStr" />
+                    <XAxis
+                        dataKey="time"
+                        domain={['dataMin', 'dataMax']}
+                        type="number"
+                        scale="time"
+                        tickFormatter={(unixTime) => {
+                            const date = new Date(unixTime * 1000);
+                            return formatDate(date);
+                        }} />
                     <YAxis />
-                    <Tooltip />
-                    
-                    <Line type={widget.params.lineType} dataKey="value" stroke="#111111" dot={false} />
+                    <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}` }} 
+                    labelFormatter={(label) => { return formatDate(new Date(label * 1000)); }}
+                    />
+
+                    {lines}
                 </LineChart>
 
             </ResponsiveContainer>
         );
-    } else if(widget.state.error) {
+    } else if (widget.state.error) {
         chart = <Exception message={widget.state.errorStr} />
     } else {
         chart = <CircularProgress />
     }
 
-    return <DashItem title={title} width={3}>{chart}</DashItem>
+    return <DashItem title={title} width={2}>{chart}</DashItem>
 
 }
 
 /**
  * The component factory and state controller
  */
-class ContextChartFactory implements WidgetFactory  {
+class ContextChartFactory implements WidgetFactory {
 
     getType(): string {
         return 'contextchart';
@@ -110,20 +137,37 @@ class ContextChartFactory implements WidgetFactory  {
 
         ensembleClient.send(p.device, 'getContext', { 'field': p.field, 'num': p.numValues })
             .then((reply) => {
-                console.debug("Received context", reply.args);
-                if(reply.args.values.length > 0)
-                    patchState({value: reply.args.values});
+                console.debug("Received context", p.field, "maxValues", p.numValues, reply.args.values);
+
+                if (reply.args.values.length > 0) {
+                    
+                    let values = this.getDataFromReply(reply.args.values);
+
+                    console.debug("  + Filtered values", values);
+                    patchState({ value: values });
+                }
                 else
-                    patchState({value: []});
+                    patchState({ value: [] });
             })
             .catch((rejected) => {
                 //console.error("Got an exception", rejected);
-                patchState({error: true, errorStr: rejected.args.message});
+                if (rejected.args.message)
+                    patchState({ error: true, errorStr: rejected.args.message });
             });
+    }
 
+    protected getDataFromReply(values: any[]): { time: number, value: number }[] {
+        let data: { time: number, value: number }[] = [];
+
+        values.forEach((v) => {
+            if(v.value !== false && v.value !== null && v.value !== undefined)
+                data.push({ time: v.time, value: v.value });
+        });
+
+        return data;
     }
 
 }
 
-export { ContextChartFactory }
+export { ContextChartFactory, ContextChartWidgetInfo }
 

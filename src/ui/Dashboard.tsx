@@ -9,7 +9,7 @@ import { globalWidgetController } from "../state/WidgetController";
 
 import Grid from '@mui/material/Grid';
 
-import { AppBar, Box, Paper, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, IconButton, Paper, Toolbar, Typography } from "@mui/material";
 
 /**
  * Import all our different widgets
@@ -17,14 +17,17 @@ import { AppBar, Box, Paper, Toolbar, Typography } from "@mui/material";
 
 import { ContextViewFactory } from "../widgets/ContextView";
 import { ContextChartFactory } from "../widgets/ContextChart";
-import { ToggleSwitchFactory } from "../widgets/ToggleSwitch";
+import { ScheduleChartFactory } from "../widgets/ScheduleChart";
+import { ActionButtonFactory } from "../widgets/ActionButton";
+import { BreakFactory } from "../widgets/Break";
 
 import { ConnectionStateAtom } from "../state/ConnectionState";
 
 globalWidgetController.registerType(new ContextViewFactory());
 globalWidgetController.registerType(new ContextChartFactory());
-globalWidgetController.registerType(new ToggleSwitchFactory());
-
+globalWidgetController.registerType(new ScheduleChartFactory());
+globalWidgetController.registerType(new ActionButtonFactory());
+globalWidgetController.registerType(new BreakFactory());
 
 
 const WidgetList = () => {
@@ -53,7 +56,8 @@ const WidgetHolder = ( { widgetAtom } : { widgetAtom: Atom<WidgetInfo>, key: str
 
 import DashStatus from "./DashStatus";
 
-import HouseIcon from '@mui/icons-material/Home';
+import { Home, Fullscreen, FullscreenExit, Schedule } from "@mui/icons-material";
+import { useState, useEffect } from "react";
 
 const Dashboard = () => {
 
@@ -66,21 +70,45 @@ const Dashboard = () => {
         body = <>{connection.error ? connection.errorStr : "Connecting to Ensemble Mesh"}</>;
     }
 
+    // Inside Dashboard component, add this state:
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    }, []);
+
     return <Suspense fallback="Loading...">
         <div className="App">
             
-            <Paper sx={{"padding": "10px", "& > *": { margin: "10px"}}}>
+            <Paper sx={{ overflow: 'hidden' }}>
             <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            <HouseIcon /> 7 Chapel Close
+                            <Home /> Alex, Richard and Freddie's House
                         </Box>
                     </Typography>
+                    <IconButton
+                        onClick={() => {
+                            if (!document.fullscreenElement) {
+                                document.documentElement.requestFullscreen();
+                            } else {
+                                document.exitFullscreen();
+                            }
+                        }}
+                        style={{ marginRight: '16px', padding: '8px 16px' }}>
+
+                        {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+                    </IconButton>
                     <DashStatus />
                 </Toolbar>
             </AppBar>
-            <Grid container spacing={1}>
+            <Grid container spacing={1} sx={{"padding": "10px"}}>
                     {body}
             </Grid>
             </Paper>

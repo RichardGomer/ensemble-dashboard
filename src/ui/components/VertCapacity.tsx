@@ -12,7 +12,7 @@ interface VertCapacityProps {
 
 export const VertCapacity: React.FC<VertCapacityProps> = ({
     percentage,
-    width = 40,
+    width = 15,
     fillColor = '#eee',
     backgroundColor = '#333',
     sx,
