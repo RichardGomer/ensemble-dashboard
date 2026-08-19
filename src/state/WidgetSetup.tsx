@@ -457,9 +457,61 @@ let initialState: WidgetInfo[] = [
     {
         type: 'contextview',
         params: {
+            requireNumber: false,
             device: 'global.context',
             field: 'window.office.main',
             title: 'Office Window',
+            pre: '',
+            post: '',
+            icon: Warning,
+            process: WindowStatusProcess
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 10
+    },
+
+    {
+        type: 'contextview',
+        params: {
+            requireNumber: false,
+            device: 'global.context',
+            field: 'window.office.small',
+            title: 'Office Window Small',
+            pre: '',
+            post: '',
+            icon: Warning,
+            process: WindowStatusProcess
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 10
+    },
+
+    {
+        type: 'contextview',
+        params: {
+            requireNumber: false,
+            device: 'global.context',
+            field: 'window.kitchen.front',
+            title: 'Kitchen Window Front',
+            pre: '',
+            post: '',
+            icon: Warning,
+            process: WindowStatusProcess
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 10
+    },
+
+    {
+        type: 'contextview',
+        params: {
+            requireNumber: false,
+            device: 'global.context',
+            field: 'window.kitchen.rear',
+            title: 'Kitchen Window Rear',
             pre: '',
             post: '',
             icon: Warning,
@@ -472,13 +524,14 @@ let initialState: WidgetInfo[] = [
 ];
 
 
-function WindowStatusProcess(value: any): { value: string, colour?: string, display?: boolean, pre?: string, post?: string } {
+function WindowStatusProcess(value: any): { value: string, colour?: string, display?: boolean, pre?: string, post?: string, isError?: boolean } {
+    console.log("WindowStatusProcess", value);
     if (value === 'open') {
-        return { value: 'Open', colour: 'red', display: true };
+        return { value: 'Open', colour: 'red', display: true, isError: true };
     } else if (value === 'closed') {
-        return { value: 'Closed', colour: 'green', display: true };
+        return { value: 'Closed', colour: 'green', display: false };
     } else {
-        return { value: 'Unknown', colour: 'orange', display: true };
+        return { value: '??', colour: 'orange', display: true };
     }
 }
 
