@@ -1,6 +1,7 @@
 import { } from "../widgets/ContextView";
 import { WidgetInfo } from '../widgets/WidgetTypes';
-import { AccessTime, AutoMode, BatteryChargingFull, BedOutlined, Bedtime, ChairOutlined, DesktopWindows, DesktopWindowsOutlined, ElectricBolt, Grass, HotTub, LightMode, Nightlife, ParkOutlined, RollerShades, RollerShadesClosed, SolarPower, WaterDrop, LocalFireDepartment, Kitchen } from '@mui/icons-material';
+import { AccessTime, AutoMode, BatteryChargingFull, BedOutlined, Bedtime, ChairOutlined, DesktopWindows, DesktopWindowsOutlined, ElectricBolt, Grass, HotTub, 
+    LightMode, Nightlife, ParkOutlined, RollerShades, RollerShadesClosed, SolarPower, WaterDrop, Warning, LocalFireDepartment, Kitchen } from '@mui/icons-material';
 
 import { colourScale, clrBadGood } from '../colour';
 
@@ -217,7 +218,7 @@ let initialState: WidgetInfo[] = [
         },
         state: {},
         refreshed: 0,
-        refresh: 60
+        refresh: 10
     },
     {
         type: 'contextview',
@@ -232,7 +233,49 @@ let initialState: WidgetInfo[] = [
         },
         state: {},
         refreshed: 0,
-        refresh: 60
+        refresh: 10
+    },
+
+    {
+        type: 'clock',
+        params: {
+            title: 'Current Time',
+            icon: AccessTime
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 1
+    },
+
+    {
+        type: 'actionbutton',
+        params: {
+            actions: [
+                {
+                    title: 'Auto',
+                    icon: AutoMode,
+                    device: 'heatpump.actions',
+                    action: 'clearBoost',
+                    args: {},
+                    matchState: Comparators.eq(false)
+                },
+                {
+                    title: 'Boost',
+                    icon: LocalFireDepartment,
+                    device: 'heatpump.actions',
+                    action: 'boost',
+                    args: {},
+                    matchState: Comparators.eq(true)
+                }
+            ],
+            title: 'Heating Boost',
+            delayTime: 2000,
+            resetTime: 5000,
+            fetchState: ActionButtonGetStateFromAction('heatpump.actions', 'getBoost', [], 'boost')
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 30
     },
 
     {
@@ -399,7 +442,44 @@ let initialState: WidgetInfo[] = [
         state: {},
         refreshed: 0,
         refresh: 30
+    },
+    // Break
+    {
+        type: 'break',
+        params: {
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 0
+    },
+
+    // Window status warnings
+    {
+        type: 'contextview',
+        params: {
+            device: 'global.context',
+            field: 'window.office.main',
+            title: 'Office Window',
+            pre: '',
+            post: '',
+            icon: Warning,
+            process: WindowStatusProcess
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 10
     }
 ];
+
+
+function WindowStatusProcess(value: any): { value: string, colour?: string, display?: boolean, pre?: string, post?: string } {
+    if (value === 'open') {
+        return { value: 'Open', colour: 'red', display: true };
+    } else if (value === 'closed') {
+        return { value: 'Closed', colour: 'green', display: true };
+    } else {
+        return { value: 'Unknown', colour: 'orange', display: true };
+    }
+}
 
 export default initialState;

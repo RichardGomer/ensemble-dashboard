@@ -19,7 +19,13 @@ type ContextViewParams = {
     field: string,
     pre: string,
     post: string,
-    title: string
+    title: string,
+    process?: (value: any) => { value: string, colour?: string, display?: boolean, pre?: string, post?: string },
+    small?: boolean,
+    dps?: number,
+    maxCapacity?: number,
+    colour?: (value: number) => string,
+    icon?: string
 }
 
 type ContextViewWidgetInfo = BaseWidgetInfo & {
@@ -55,22 +61,52 @@ const ContextView = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextViewWidg
     var clrSpot = <></>;
     var elCap = <></>
 
-    const colour = !isNaN(round) && widget.params.colour ? widget.params.colour(round) : 'transparent';
+    var colour = !isNaN(round) && widget.params.colour ? widget.params.colour(round) : 'transparent';
 
+    var pre = widget.params.pre ? widget.params.pre : '';
+    var post = widget.params.post ? widget.params.post : '';
+
+    // Value, colour, pre and post can be overridden by a process function, which can also decide whether to display the value at all
+    if (widget.params.process) {
+        const processed = widget.params.process(round);
+
+        if (processed.display === false) {
+            return <></>;
+        }
+
+        strVal = processed.value;
+
+        if (processed.colour) {
+            colour = processed.colour;
+        }
+
+        if(processed.pre) {
+            pre = processed.pre;
+        }
+
+        if(processed.post) {
+            post = processed.post;
+        }
+
+
+    }
+
+    // If a maximum capacity is specified, show a vertical capacity bar, otherwise, maybe show a coloured spot
     if (widget.params.maxCapacity && !isNaN(round)) {
         let capacity = round;
         let pc = Math.min(100, Math.max(0, Math.round((capacity / widget.params.maxCapacity) * 100)));
         elCap = <VertCapacity percentage={pc} fillColor={colour} />;
-    } else if(widget.params.colour && !isNaN(round)) {
+    } else if(colour !== false) {
         clrSpot = <Box sx={{ width: 30, height: 30, borderRadius: '50%', backgroundColor: colour, border: '2px solid #999;', alignSelf: 'center' }} />;
     }
 
+    // either show the value or a spinner if it's not a number
     let elVal = <></>
     if(!isNaN(round)) {
         elVal = <Typography variant="h3">
-            <span style={{ opacity: 0.3 }}>{widget.params.pre}</span>
+            <span style={{ opacity: 0.3 }}>{pre}</span>
             {strVal}
-            <span style={{ opacity: 0.3, fontSize: '0.6em', verticalAlign: 'super' }}>{widget.params.post}</span>
+            <span style={{ opacity: 0.3, fontSize: '0.6em', verticalAlign: 'super' }}>{post}</span>
         </Typography>
     } else {
         elVal = <CircularProgress />
