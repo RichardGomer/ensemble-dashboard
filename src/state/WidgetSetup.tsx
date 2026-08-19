@@ -1,6 +1,6 @@
 import { } from "../widgets/ContextView";
 import { WidgetInfo } from '../widgets/WidgetTypes';
-import { AutoMode, BatteryChargingFull, BedOutlined, Bedtime, ChairOutlined, DesktopWindows, DesktopWindowsOutlined, ElectricBolt, Grass, HotTub, LightMode, Nightlife, ParkOutlined, RollerShades, RollerShadesClosed, SolarPower, WaterDrop } from '@mui/icons-material';
+import { AccessTime, AutoMode, BatteryChargingFull, BedOutlined, Bedtime, ChairOutlined, DesktopWindows, DesktopWindowsOutlined, ElectricBolt, Grass, HotTub, LightMode, Nightlife, ParkOutlined, RollerShades, RollerShadesClosed, SolarPower, WaterDrop, LocalFireDepartment, Kitchen } from '@mui/icons-material';
 
 import { colourScale, clrBadGood } from '../colour';
 
@@ -29,7 +29,7 @@ let initialState: WidgetInfo[] = [
         type: 'contextview',
         params: {
             device: 'global.context',
-            field: 'temp-office',
+            field: 'temperature.office',
             title: 'Temp Office',
             pre: '',
             post: '°C',
@@ -43,11 +43,11 @@ let initialState: WidgetInfo[] = [
         type: 'contextview',
         params: {
             device: 'global.context',
-            field: 'temp-lounge',
-            title: 'Temp Lounge',
+            field: 'temperature.kitchen',
+            title: 'Temp Kitchen',
             pre: '',
             post: '°C',
-            icon: ChairOutlined
+            icon: Kitchen
         },
         state: {},
         refreshed: 0,
@@ -57,7 +57,7 @@ let initialState: WidgetInfo[] = [
         type: 'contextview',
         params: {
             device: 'global.context',
-            field: 'temp-landing',
+            field: 'temperature.landing',
             title: 'Temp Landing',
             pre: '',
             post: '°C',
@@ -112,12 +112,14 @@ let initialState: WidgetInfo[] = [
     {
         type: 'contextchart',
         params: {
-            device: 'global.context',
-            field: 'outdoor.temperature',
             title: 'Outdoor Temperature',
-            chartType: 'line',
-            lineType: 'step-after',
-            numValues: 24 * 60
+            data: [{
+                device: 'global.context',
+                field: 'outdoor.temperature',
+                chartType: 'line',
+                lineType: 'step-after',
+                numValues: 24 * 60
+            }]
         },
         state: {},
         refreshed: 0,
@@ -127,13 +129,16 @@ let initialState: WidgetInfo[] = [
     {
         type: 'contextchart',
         params: {
-            device: 'global.context',
-            field: 'electariff',
             title: 'Electricity Tariff',
-            chartType: 'line',
-            lineType: 'stepAfter',
-            numValues: 96,
-            colour: '#ff0'
+            data: [{
+                device: 'global.context',
+                field: 'electariff',
+
+                chartType: 'line',
+                lineType: 'stepAfter',
+                numValues: 96,
+                colour: '#ff0'
+            }]
         },
         state: {},
         refreshed: 0,
@@ -143,13 +148,24 @@ let initialState: WidgetInfo[] = [
     {
         type: 'schedulechart',
         params: {
-            device: 'heatpump.context',
-            field: 'heatplan',
             title: 'Heating Plan',
-            chartType: 'line',
-            lineType: 'stepAfter',
-            numValues: 1,
-            colour: 'rgba(255, 0, 153, 1)'
+            data: [{
+                device: 'heatpump.context',
+                field: 'heatplan',
+                chartType: 'line',
+                lineType: 'stepAfter',
+                numValues: 1,
+                colour: 'rgb(153, 58, 115)'
+            },
+            {
+                device: 'heatpump.context',
+                field: 'hotwaterplan',
+                chartType: 'line',
+                lineType: 'stepAfter',
+                numValues: 1,
+                colour: 'rgb(41, 142, 209)'
+            }
+        ]
         },
         state: {},
         refreshed: 0,
@@ -178,7 +194,7 @@ let initialState: WidgetInfo[] = [
             pre: '',
             post: 'KWh',
             icon: BatteryChargingFull,
-            maxCapacity: 8,
+            maxCapacity: 16,
             dps: 2,
             colour: (v: number) => {
                 return colourScale(0, 8, clrBadGood, v);
@@ -217,6 +233,48 @@ let initialState: WidgetInfo[] = [
         state: {},
         refreshed: 0,
         refresh: 60
+    },
+
+    {
+        type: 'clock',
+        params: {
+            title: 'Current Time',
+            icon: AccessTime
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 1
+    },
+
+    {
+        type: 'actionbutton',
+        params: {
+            actions: [
+                {
+                    title: 'Auto',
+                    icon: AutoMode,
+                    device: 'heatpump.actions',
+                    action: 'clearBoost',
+                    args: {},
+                    matchState: Comparators.eq(false)
+                },
+                {
+                    title: 'Boost',
+                    icon: LocalFireDepartment,
+                    device: 'heatpump.actions',
+                    action: 'boost',
+                    args: {},
+                    matchState: Comparators.eq(true)
+                }
+            ],
+            title: 'Heating Boost',
+            delayTime: 2000,
+            resetTime: 5000,
+            fetchState: ActionButtonGetStateFromAction('heatpump.actions', 'getBoost', [], 'boost')
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 30
     },
 
 

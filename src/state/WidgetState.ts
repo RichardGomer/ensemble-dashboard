@@ -83,6 +83,7 @@ let refreshWidgets = () => {
                     refreshed: (new Date()).getTime()
                 });
 
+                /* Replaced this with the general purpose state patcher; will that work?...
                 // This function will patch new state values into the widget as it exists at the time
                 // the new stuff is received
                 const patchState = (updatedState) => {
@@ -102,8 +103,9 @@ let refreshWidgets = () => {
 
                     store.set(wAtom, newState);
                 }
+                */
 
-                factory.updateState(widget, patchState, getState);
+                factory.updateState(widget, globalWidgetController.getStatePatcher(wAtom), getState);
 
             })(wAtom);
 

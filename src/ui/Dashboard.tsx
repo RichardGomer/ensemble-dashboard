@@ -20,6 +20,7 @@ import { ContextChartFactory } from "../widgets/ContextChart";
 import { ScheduleChartFactory } from "../widgets/ScheduleChart";
 import { ActionButtonFactory } from "../widgets/ActionButton";
 import { BreakFactory } from "../widgets/Break";
+import { ClockFactory } from "../widgets/Clock";
 
 import { ConnectionStateAtom } from "../state/ConnectionState";
 
@@ -28,6 +29,7 @@ globalWidgetController.registerType(new ContextChartFactory());
 globalWidgetController.registerType(new ScheduleChartFactory());
 globalWidgetController.registerType(new ActionButtonFactory());
 globalWidgetController.registerType(new BreakFactory());
+globalWidgetController.registerType(new ClockFactory());
 
 
 const WidgetList = () => {
@@ -58,6 +60,7 @@ import DashStatus from "./DashStatus";
 
 import { Home, Fullscreen, FullscreenExit, Schedule } from "@mui/icons-material";
 import { useState, useEffect } from "react";
+import { ClockFactory } from "../widgets/Clock";
 
 const Dashboard = () => {
 

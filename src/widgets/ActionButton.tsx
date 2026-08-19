@@ -28,7 +28,7 @@ type ActionButtonActionSpec = {
 type ActionButtonParams = {
     actions: ActionButtonActionSpec[]
     title: string,
-    resetTime?: number,
+    resetTime?: number, // Time after which the status will be fetched again to sync the button's state
     delayTime: number, // How long to wait for another press before sending the action
     fetchState?: (actions : ActionButtonActionSpec[]) => Promise<number>, // A callback to pick up the current state from the server; must return the index of the relevant action
 }
@@ -53,6 +53,11 @@ const ActionButton = ({ widgetAtom, factory, patchState }: { widgetAtom: Atom<Ac
     const [widget, setWidget] = useAtom(widgetAtom);
 
     const [lastTimeout, setLastTimeout] = useState(null);
+
+    if(widget.params.fetchState !== false && widget.refresh < 1) {
+        console.warn("ActionButton " + widget.params.title + " has fetchState callback but refresh is not set, defaulting to 30s");
+        widget.refresh = 30;
+    }
 
     /**
      * Force a re-render after the reset time has elapsed so that the spinner goes away
@@ -177,8 +182,8 @@ class ActionButtonFactory implements WidgetFactory {
         /**
          * If we have a fetchState callback, use it to pick the active state for the button
          */
-        if(p.fetchState !== false) {
-            console.log("ActionButton fetching state using fetchState callback", p.fetchState);
+        if(typeof p.fetchState === 'function') {
+            console.log("ActionButton " + p.title + " fetching state using fetchState callback", p.fetchState);
 
             p.fetchState(p.actions).then(async (currentState) => {
                 
@@ -186,12 +191,12 @@ class ActionButtonFactory implements WidgetFactory {
                 var state = await getState();
 
                 if(state.state.pressing) {
-                    console.log("ActionButton fetchState: button is being pressed, not updating state");
+                    console.log("ActionButton " + p.title + " fetchState: button is being pressed, not updating state");
                     return;
                 }
 
                 if(state.state.lastSend > Date.now() - (p.resetTime || 10)) {
-                    console.log("ActionButton fetchState: button is in reset period, not updating state");
+                    console.log("ActionButton " + p.title + " fetchState: button is in reset period, not updating state");
                     return;
                 }
 
@@ -204,13 +209,16 @@ class ActionButtonFactory implements WidgetFactory {
                     }
                 }
 
-                console.debug("ActionButton fetched state", currentState, "mapped to index", stateIndex);
+                console.debug("ActionButton " + p.title + " fetched state", currentState, "mapped to index", stateIndex);
 
                 patchState({ state: stateIndex });
 
             }).catch((err) => {
-                console.error("ActionButton fetchState error", err);
+                console.error("ActionButton " + p.title + " fetchState error", err);
             });
+        }
+        else {
+            console.log("ActionButton " + p.title + " has no fetchState callback, skipping state update");
         }
     }
 }

@@ -16,7 +16,7 @@ interface WidgetFactory {
      * @param widgetAtom: An atom representing the WidgetInfo for the widget
      * @param patchState: A function that can be used to update the widget state atom
      */
-    getElement(widgetAtom : Atom<WidgetInfo>, patchState : (Object) => void) : ReactElement;
+    getElement(widgetAtom : Atom<WidgetInfo>, patchState : (patchObj: Object, key?: PropertyKey) => void) : ReactElement;
 
     /**
      * Fetch updated state information for the given widget. This method is called routinely when a refresh is due.
@@ -26,7 +26,7 @@ interface WidgetFactory {
      * @param state: The WidgetInfo object for the widget in question
      * @param patchState: A function that will be called with the new state data to apply it to the widget
      */
-    updateState(state: WidgetInfo, patchState : (Object) => void, getState?: () => WidgetInfo) : void;
+    updateState(state: WidgetInfo, patchState : (patchObj: Object, key?: PropertyKey) => void, getState?: () => WidgetInfo) : void;
 }
 
 type WidgetState = Object;
@@ -57,27 +57,42 @@ class WidgetController {
      * Get a convenience function that can patch state into the given widget atom
      * @param atom: the atom that contains the Widget configuration and state
      * @returns a patching function
-     * 
-     * NB: there is a similar function in WidgetController.ts for handling routine refreshes, which additionally records refresh time etc.
      */
-    public getStatePatcher(atom: WritableAtom<WidgetInfo, [WidgetInfo], void>) : (patchObj: Partial<WidgetInfo>) => void {
+    public getStatePatcher(atom: WritableAtom<WidgetInfo, [WidgetInfo], void>) : (patchObj: Partial<WidgetInfo>, key?: PropertyKey) => void {
 
         const store = getDefaultStore();
 
-        return (patchObj: Partial<WidgetInfo>) => {
-            let getState = () : WidgetInfo => {
+
+        return (patchObj: Partial<WidgetInfo>, key?: PropertyKey) => {
+            let getAtomData = () : WidgetInfo => {
                 return store.get(atom);
             }
 
-            const newState = {
-                ...getState().state,
-                ...patchObj
-            };
+            // If key is set, only patch that bit of the original state
+            let newState;
+            if (key !== undefined) {
+
+                newState = {
+                    ...getAtomData().state
+                };
+
+                newState[key] = {
+                    ...newState[key],
+                    ...patchObj
+                };
+
+            } else {
+                newState = {
+                    ...getAtomData().state,
+                    ...patchObj
+                };
+            }
 
             store.set(atom, {
-                ...getState(),
+                ...getAtomData(),
                 state: newState
             });
+
         };
     }
 

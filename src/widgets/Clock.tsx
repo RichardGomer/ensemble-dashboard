@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
-import { BaseWidgetInfo } from './WidgetTypes';
-
+import { BaseWidgetInfo, WidgetInfo } from './WidgetTypes';
+import { Atom } from 'jotai/vanilla/atom';
+import Box from '@mui/material/Box/Box';
+import { useAtom } from 'jotai';
+import { DashItem } from '../ui/DashItem';
+import { Typography } from '@mui/material';
 
 type ClockWidgetState = {
     // No state needed for Clock
@@ -23,8 +27,12 @@ declare module "./WidgetTypes" {
 
 
 
-export const Clock: React.FC = () => {
+export const Clock: React.FC = ({ widgetAtom, factory }: { widgetAtom: Atom<ClockWidgetInfo>, factory: ClockFactory }) => {
     const [time, setTime] = useState<string>('');
+
+    const [widget, setWidget] = useAtom(widgetAtom);
+
+    const title = widget.params.title || "";
 
     useEffect(() => {
 
@@ -45,9 +53,11 @@ export const Clock: React.FC = () => {
     }, []);
 
     return (
-        <div className="clock">
-            <h2>{time || '--'}</h2>
-        </div>
+        <DashItem title={title} icon={widget.params.icon}>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+                <Typography variant="h3"><strong>{time}</strong></Typography>
+            </Box>
+        </DashItem>
     );
 };
 
@@ -57,8 +67,8 @@ class ClockFactory {
         return 'clock';
     }
 
-    getElement(): React.FC {
-        return Clock;
+    getElement(widgetAtom: Atom<WidgetInfo>, patchState: (Object) => void): React.ReactElement {
+        return <Clock widgetAtom={widgetAtom} />;
     }
 
     updateState(widget: ClockWidgetInfo, patchState: (newState: Partial<ClockWidgetState>) => void) {
