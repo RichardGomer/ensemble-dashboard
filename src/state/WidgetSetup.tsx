@@ -278,48 +278,6 @@ let initialState: WidgetInfo[] = [
         refresh: 30
     },
 
-    {
-        type: 'clock',
-        params: {
-            title: 'Current Time',
-            icon: AccessTime
-        },
-        state: {},
-        refreshed: 0,
-        refresh: 1
-    },
-
-    {
-        type: 'actionbutton',
-        params: {
-            actions: [
-                {
-                    title: 'Auto',
-                    icon: AutoMode,
-                    device: 'heatpump.actions',
-                    action: 'clearBoost',
-                    args: {},
-                    matchState: Comparators.eq(false)
-                },
-                {
-                    title: 'Boost',
-                    icon: LocalFireDepartment,
-                    device: 'heatpump.actions',
-                    action: 'boost',
-                    args: {},
-                    matchState: Comparators.eq(true)
-                }
-            ],
-            title: 'Heating Boost',
-            delayTime: 2000,
-            resetTime: 5000,
-            fetchState: ActionButtonGetStateFromAction('heatpump.actions', 'getBoost', [], 'boost')
-        },
-        state: {},
-        refreshed: 0,
-        refresh: 30
-    },
-
 
     /**
      * Force a break
@@ -332,6 +290,30 @@ let initialState: WidgetInfo[] = [
         refreshed: 0,
         refresh: 0
     },
+
+
+    /**
+     * Freddie
+     */
+    {
+        type: 'dogmeds',
+        params: {
+            device: 'global.context',
+            title: 'Freddie',
+            foodField: 'dog.food',
+            medField: 'dog.med',
+            foodAfterFoodHrs: 8,
+            foodAfterMedHrs: 2,
+            medAfterFoodHrs: 1,
+            medIntervalHrs: 10,
+            resetTime: 2500,
+            numValues: 4
+        },
+        state: {},
+        refreshed: 0,
+        refresh: 30
+    },
+
 
     /**
      * Action Buttons
@@ -525,7 +507,7 @@ let initialState: WidgetInfo[] = [
 
 
 function WindowStatusProcess(value: any): { value: string, colour?: string, display?: boolean, pre?: string, post?: string, isError?: boolean } {
-    console.log("WindowStatusProcess", value);
+    //console.log("WindowStatusProcess", value);
     if (value === 'open') {
         return { value: 'Open', colour: 'red', display: true, isError: true };
     } else if (value === 'closed') {

@@ -130,7 +130,10 @@ class EnsembleConnector {
      */
     send(target: string, action: string, args: CommandArgs) : Promise<Command> {
 
+        console.log("EnsembleConnector.send", target, action, args);
+
         if(!this.connected) {
+            console.error("Websocket is not connected, cannot send command");
             return Promise.reject("Not connected");
         } else {
             console.log("Websocket is connected, sending command");
@@ -183,7 +186,7 @@ class EnsembleConnector {
             return;
         }
 
-        console.log("Received command", cmd);
+        //console.log("Received command", cmd);
 
         if(cmd.action == '_reply') {
             if(typeof this.replies[cmd.follows] != 'undefined') {

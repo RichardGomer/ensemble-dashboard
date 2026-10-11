@@ -56,7 +56,7 @@ const ContextChart = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextChartWi
     // Inside the ContextChart component, after the title declaration:
     const theme = useTheme();
 
-    console.debug("Rendering ContextChart", title, "with state", widget.state);
+    //console.debug("Rendering ContextChart", title, "with state", widget.state);
 
     let chart: ReactNode;
     if (widget.state.values) {
@@ -77,7 +77,7 @@ const ContextChart = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextChartWi
             }
         
             let values = widget.state.values[id];
-            console.log("Chart Values", widget.params.data[id].field, values);
+            //console.log("Chart Values", widget.params.data[id].field, values);
 
             if (values.length === 0) return;
 
@@ -179,13 +179,13 @@ class ContextChartFactory implements WidgetFactory {
 
                 ensembleClient.send(d.device, 'getContext', { 'field': d.field, 'num': d.numValues })
                     .then((reply) => {
-                        console.debug("Chart received context", d.field, "maxValues", d.numValues, reply.args.values);
+                        //console.debug("Chart received context", d.field, "maxValues", d.numValues, reply.args.values);
 
                         if (reply.args.values.length > 0) {
 
                             let values = this.getDataFromReply(reply.args.values);
 
-                            console.debug("  + Filtered values", values);
+                            //console.debug("  + Filtered values", values);
 
                             patchState({ [fieldID]: values }, 'values');
                         }

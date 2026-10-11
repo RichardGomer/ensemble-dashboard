@@ -65,7 +65,7 @@ let refreshWidgets = () => {
 
         let due = widget.refreshed + widget.refresh * 1000;
         let idStr = widget.type + " " + widget.params.title ? (" '" + widget.params.title + "'") : "";
-        console.debug(idStr, "Due at ", due, " now ", now, "Overdue?", due < now);
+        //console.debug(idStr, "Due at ", due, " now ", now, "Overdue?", due < now);
         if (widget.refresh > 0 && due < now) {
 
             let factory = globalWidgetController.getFactory(widget.type);
@@ -127,7 +127,7 @@ declare global {
 
 // Clear any old interval, mostly used when parcel is doing reloads!
 if (window.autorefresherinterval) {
-    console.log("Clearing old interval", window.autorefresherinterval)
+    //console.log("Clearing old interval", window.autorefresherinterval)
     window.clearInterval(window.autorefresherinterval);
 }
 

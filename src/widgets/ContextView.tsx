@@ -59,7 +59,7 @@ const ContextView = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextViewWidg
     let displayable = isNaN(round) ? false : true;
     
     const title = widget.params.title
-    console.log("Rendering ContextView", widget.params.title);
+    //console.log("Rendering ContextView", widget.params.title);
 
     var clrSpot = <></>;
     var elCap = <></>
@@ -106,12 +106,13 @@ const ContextView = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextViewWidg
         let capacity = round;
         let pc = Math.min(100, Math.max(0, Math.round((capacity / widget.params.maxCapacity) * 100)));
         elCap = <VertCapacity percentage={pc} fillColor={colour} />;
-    } else if(colour !== false) {
+    } else if(colour !== 'transparent' && colour !== false) {
+        console.log("ContextView", title, "colour is", colour);
         clrSpot = <Box sx={{ width: 30, height: 30, borderRadius: '50%', backgroundColor: colour, border: '2px solid #999;', alignSelf: 'center' }} />;
     }
 
 
-    console.log("ContextView", title, widget.params.field, "value", widget.state.value, "displayable", displayable);
+    //console.log("ContextView", title, widget.params.field, "value", widget.state.value, "displayable", displayable);
 
     // either show the value or a spinner if it's not a number
     let elVal = <></>
@@ -160,7 +161,7 @@ class ContextViewFactory implements WidgetFactory {
 
         ensembleClient.send(p.device, 'getContext', { 'field': p.field })
             .then((reply) => {
-                console.debug("Received context for ", p.field, reply.args);
+                //console.debug("Received context for ", p.field, reply.args);
                 if (reply.args.values.length > 0)
                     patchState({ value: reply.args.values[0].value, exception: false });
                 else

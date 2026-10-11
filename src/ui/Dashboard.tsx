@@ -21,6 +21,7 @@ import { ScheduleChartFactory } from "../widgets/ScheduleChart";
 import { ActionButtonFactory } from "../widgets/ActionButton";
 import { BreakFactory } from "../widgets/Break";
 import { ClockFactory } from "../widgets/Clock";
+import { DogMedsFactory } from "../widgets/DogMeds";
 
 import { ConnectionStateAtom } from "../state/ConnectionState";
 
@@ -30,7 +31,7 @@ globalWidgetController.registerType(new ScheduleChartFactory());
 globalWidgetController.registerType(new ActionButtonFactory());
 globalWidgetController.registerType(new BreakFactory());
 globalWidgetController.registerType(new ClockFactory());
-
+globalWidgetController.registerType(new DogMedsFactory());
 
 const WidgetList = () => {
     const [widgetAtoms] = useAtom(widgetAtomsAtom);
@@ -60,7 +61,6 @@ import DashStatus from "./DashStatus";
 
 import { Home, Fullscreen, FullscreenExit, Schedule } from "@mui/icons-material";
 import { useState, useEffect } from "react";
-import { ClockFactory } from "../widgets/Clock";
 
 const Dashboard = () => {
 

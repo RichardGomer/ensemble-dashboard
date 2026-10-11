@@ -99,7 +99,7 @@ const ActionButton = ({ widgetAtom, factory, patchState }: { widgetAtom: Atom<Ac
     // After the button has been unpressed for delayTime ms, we send the action to the server
     const nextState = () => {
         let newState = (widget.state.state + 1) % widget.params.actions.length;
-        console.log("Next state is", newState);
+        //console.log("Next state is", newState);
 
         if(lastTimeout !== null) {
             clearTimeout(lastTimeout);
@@ -114,7 +114,7 @@ const ActionButton = ({ widgetAtom, factory, patchState }: { widgetAtom: Atom<Ac
 
         const actionSpec = widget.params.actions[stateNumber];
 
-        console.log("Sending action", actionSpec);
+        //console.log("Sending action", actionSpec);
         debugger;
 
         patchState({lastSend: Date.now(), pressing: false, state: stateNumber});
@@ -124,7 +124,7 @@ const ActionButton = ({ widgetAtom, factory, patchState }: { widgetAtom: Atom<Ac
             
         })
         .catch((rejected) => {
-            console.error("Got an exception", rejected);
+            console.log("Got an exception", rejected);
         });
     }
 
@@ -183,7 +183,7 @@ class ActionButtonFactory implements WidgetFactory {
          * If we have a fetchState callback, use it to pick the active state for the button
          */
         if(typeof p.fetchState === 'function') {
-            console.log("ActionButton " + p.title + " fetching state using fetchState callback", p.fetchState);
+            //console.log("ActionButton " + p.title + " fetching state using fetchState callback", p.fetchState);
 
             p.fetchState(p.actions).then(async (currentState) => {
                 
@@ -191,12 +191,12 @@ class ActionButtonFactory implements WidgetFactory {
                 var state = await getState();
 
                 if(state.state.pressing) {
-                    console.log("ActionButton " + p.title + " fetchState: button is being pressed, not updating state");
+                    //console.log("ActionButton " + p.title + " fetchState: button is being pressed, not updating state");
                     return;
                 }
 
                 if(state.state.lastSend > Date.now() - (p.resetTime || 10)) {
-                    console.log("ActionButton " + p.title + " fetchState: button is in reset period, not updating state");
+                    //console.log("ActionButton " + p.title + " fetchState: button is in reset period, not updating state");
                     return;
                 }
 
@@ -209,16 +209,16 @@ class ActionButtonFactory implements WidgetFactory {
                     }
                 }
 
-                console.debug("ActionButton " + p.title + " fetched state", currentState, "mapped to index", stateIndex);
+                //console.debug("ActionButton " + p.title + " fetched state", currentState, "mapped to index", stateIndex);
 
                 patchState({ state: stateIndex });
 
             }).catch((err) => {
-                console.error("ActionButton " + p.title + " fetchState error", err);
+                //console.error("ActionButton " + p.title + " fetchState error", err);
             });
         }
         else {
-            console.log("ActionButton " + p.title + " has no fetchState callback, skipping state update");
+            //console.log("ActionButton " + p.title + " has no fetchState callback, skipping state update");
         }
     }
 }
@@ -233,14 +233,14 @@ class ActionButtonFactory implements WidgetFactory {
 function ActionButtonGetStateFromAction(deviceName: string, action: string, args: string[], replyArg: string) : any {
 
     return async () => {
-        console.log("ActionButtonGetStateFromAction sending fetch", deviceName, action, args);
+        //console.log("ActionButtonGetStateFromAction sending fetch", deviceName, action, args);
         return await ensembleClient.send(deviceName, action, args)
                     .then((reply) => {
-                        console.debug("ActionButton getState action reply", reply);
+                        //console.debug("ActionButton getState action reply", reply);
                         return reply.args[replyArg];
                     })
                     .catch((rejected) => {
-                        console.error("Got an exception in response to our action", rejected);
+                        //console.error("Got an exception in response to our action", rejected);
                         return null;
                     });
     }

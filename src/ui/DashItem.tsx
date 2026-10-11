@@ -26,7 +26,7 @@ const DashItem = ({ title, icon, children, width, sx }: { title: String, icon?: 
                 </Typography>
 
                 <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    {icon && <SvgIcon component={icon} sx={{ fontSize: 40, marginRight: "20px", opacity: 0.4 }} /> }
+                    {icon && <SvgIcon component={icon} sx={{ fontSize: 40, marginRight: "10px", opacity: 0.4 }} /> }
                     {children}
                 </Box>
 
