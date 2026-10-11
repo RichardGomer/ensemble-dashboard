@@ -1,7 +1,7 @@
 import { } from "../widgets/ContextView";
 import { WidgetInfo } from '../widgets/WidgetTypes';
 import { AccessTime, AutoMode, BatteryChargingFull, BedOutlined, Bedtime, ChairOutlined, DesktopWindows, DesktopWindowsOutlined, ElectricBolt, Grass, HotTub, 
-    LightMode, Nightlife, ParkOutlined, RollerShades, RollerShadesClosed, SolarPower, WaterDrop, Warning, LocalFireDepartment, Kitchen } from '@mui/icons-material';
+    LightMode, Nightlife, ParkOutlined, RollerShades, RollerShadesClosed, SolarPower, WaterDrop, Warning, LocalFireDepartment, Kitchen, FlightTakeoff } from '@mui/icons-material';
 
 import { colourScale, clrBadGood } from '../colour';
 
@@ -257,7 +257,7 @@ let initialState: WidgetInfo[] = [
                     device: 'heatpump.actions',
                     action: 'clearBoost',
                     args: {},
-                    matchState: Comparators.eq(false)
+                    matchState: Comparators.eq('auto')
                 },
                 {
                     title: 'Boost',
@@ -265,13 +265,22 @@ let initialState: WidgetInfo[] = [
                     device: 'heatpump.actions',
                     action: 'boost',
                     args: {},
-                    matchState: Comparators.eq(true)
+                    matchState: Comparators.eq('boost')
+                },
+                {
+                    title: 'Holiday',
+                    icon: FlightTakeoff,
+                    device: 'heatpump.actions',
+                    action: 'setHoliday',
+                    args: {},
+                    matchState: Comparators.eq('holiday')
                 }
             ],
-            title: 'Heating Boost',
+            title: 'Heating Mode',
             delayTime: 2000,
             resetTime: 5000,
-            fetchState: ActionButtonGetStateFromAction('heatpump.actions', 'getBoost', [], 'boost')
+            numValues: 4,
+            fetchState: ActionButtonGetStateFromAction('heatpump.actions', 'getMode', [], 'mode')
         },
         state: {},
         refreshed: 0,
@@ -303,8 +312,8 @@ let initialState: WidgetInfo[] = [
             foodField: 'dog.food',
             medField: 'dog.med',
             foodAfterFoodHrs: 8,
-            foodAfterMedHrs: 2,
-            medAfterFoodHrs: 1,
+            foodAfterMedHrs: 1,
+            medAfterFoodHrs: 2.5,
             medIntervalHrs: 10,
             resetTime: 2500,
             numValues: 4
