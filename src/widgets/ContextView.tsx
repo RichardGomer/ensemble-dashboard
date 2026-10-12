@@ -2,11 +2,12 @@ import { useAtom, Atom } from "jotai";
 import { WidgetFactory, globalWidgetController } from "../state/WidgetController";
 import { ensembleClient } from "../state/ConnectionState"
 
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 import { DashItem } from "../ui/DashItem"
 import { BaseWidgetInfo, WidgetInfo } from "./WidgetTypes";
 import VertCapacity from "../ui/components/VertCapacity";
+import LoadingThrobber from "./LoadingThrobber";
 
 
 
@@ -123,7 +124,7 @@ const ContextView = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextViewWidg
             <span style={{ opacity: 0.3, fontSize: '0.6em', verticalAlign: 'super' }}>{post}</span>
         </Typography>
     } else {
-        elVal = <CircularProgress />
+        elVal = <LoadingThrobber />
     }
 
 

@@ -5,7 +5,7 @@ import { Atom, useAtom } from "jotai";
 import { WidgetFactory, globalWidgetController } from "../state/WidgetController";
 import { ensembleClient } from "../state/ConnectionState"
 
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 
 import { DashItem } from "../ui/DashItem"
 import { BaseWidgetInfo, WidgetInfo } from "./WidgetTypes"; 

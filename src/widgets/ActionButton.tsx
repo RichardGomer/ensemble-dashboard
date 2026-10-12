@@ -2,12 +2,13 @@ import { useAtom, Atom } from "jotai";
 import { WidgetFactory, globalWidgetController } from "../state/WidgetController";
 import { ensembleClient } from "../state/ConnectionState"
 
-import { Box, Button, CircularProgress, IconButton, patch, Typography } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 
 import { DashItem } from "../ui/DashItem"
 import { BaseWidgetInfo, WidgetInfo } from "./WidgetTypes";
 import { Home } from "@mui/icons-material";
 import { useEffect, useState } from "react";
+import LoadingThrobber from "./LoadingThrobber";
 
 
 type ActionButtonState = {
@@ -153,7 +154,7 @@ const ActionButton = ({ widgetAtom, factory, patchState }: { widgetAtom: Atom<Ac
 
     return <DashItem title={title}>
         <Box sx={{ display: 'flex', gap: 2, flexBasis: '100%', justifyContent: 'center' }}>
-            {isActive ? <CircularProgress /> : button}
+            {isActive ? <LoadingThrobber /> : button}
         </Box>
     </DashItem>
 

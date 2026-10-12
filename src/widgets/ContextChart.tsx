@@ -2,8 +2,6 @@ import { useAtom, Atom } from "jotai";
 import { WidgetFactory, globalWidgetController } from "../state/WidgetController";
 import { ensembleClient } from "../state/ConnectionState"
 
-import { CircularProgress } from "@mui/material";
-
 import { DashItem } from "../ui/DashItem"
 import { BaseWidgetInfo } from "./WidgetTypes";
 
@@ -11,6 +9,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import Exception from "./Exception";
 import { ReactNode } from "react";
 import { useTheme } from "@mui/material/styles";
+import LoadingThrobber from "./LoadingThrobber";
 
 
 
@@ -149,7 +148,7 @@ const ContextChart = ({ widgetAtom, factory }: { widgetAtom: Atom<ContextChartWi
     } else if (widget.state.error) {
         chart = <Exception message={widget.state.errorStr} />
     } else {
-        chart = <CircularProgress />
+        chart = <LoadingThrobber />
     }
 
     return <DashItem title={title} width={2}>{chart}</DashItem>

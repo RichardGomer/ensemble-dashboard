@@ -2,12 +2,13 @@ import { useAtom, Atom } from "jotai";
 import { WidgetFactory } from "../state/WidgetController";
 import { ensembleClient } from "../state/ConnectionState"
 
-import { Box, Button, CircularProgress, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Typography } from "@mui/material";
 import { Restaurant, Medication } from "@mui/icons-material";
 
 import { DashItem } from "../ui/DashItem"
 import { BaseWidgetInfo, WidgetInfo } from "./WidgetTypes";
 import { useEffect, useState } from "react";
+import LoadingThrobber from "./LoadingThrobber";
 
 
 type DogMedsState = {
@@ -106,7 +107,7 @@ const DogMeds = ({ widgetAtom, factory, patchState }: { widgetAtom: Atom<DogMeds
 
         console.log("DogMeds recording", field, "at", t, "; device is ", p.device);
 
-        ensembleClient.send(p.device, 'updateContext', { field: field, value: 1, time: t })
+        ensembleClient.send(p.device, 'updateContext', { field: field, value: 1, time: t, expires: t + 24 * 3600 })
             .then(() => { })
             .catch((rejected) => {
                 console.log("DogMeds got an exception", rejected);
@@ -119,41 +120,45 @@ const DogMeds = ({ widgetAtom, factory, patchState }: { widgetAtom: Atom<DogMeds
         isActive = true;
     }
 
-    // History for the last 24 hours, newest first
+    // History for the last 24 hours, oldest first so the newest is on the right
     const cutoff = now - 24 * HOUR;
     const history = [
         ...foodTimes.map((t) => ({ t, label: 'Food' })),
         ...medTimes.map((t) => ({ t, label: 'Vetmedin' })),
-    ].filter((h) => h.t >= cutoff).sort((a, b) => b.t - a.t);
+    ].filter((h) => h.t >= cutoff).sort((a, b) => a.t - b.t);
 
     const column = (blocks: string[], onClick: () => void, Icon: typeof Restaurant, label: string) => (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
             <Button size="large" variant="contained" color="success" disabled={blocks.length > 0 || isActive} onClick={onClick}
+                sx={{ flexDirection: 'column', '& .MuiButton-startIcon': { margin: 0 } }}
                 startIcon={<Icon fontSize="large" />}>
                 {label}
+                {blocks.map((b, i) => <Typography key={i} variant="caption" color="text.secondary">{b}</Typography>)}
             </Button>
-            {blocks.map((b, i) => <Typography key={i} variant="caption" color="error">{b}</Typography>)}
+            
         </Box>
     );
 
     let content;
     if (!widget.state.foodTimes || !widget.state.medTimes) {
-        content = <CircularProgress />;
+        content = <LoadingThrobber />;
     } else {
         content = <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexBasis: '100%' }}>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                {isActive ? <CircularProgress /> : <>
+                {isActive ? <LoadingThrobber /> : <>
                     {column(feedBlocks, () => record(p.foodField, 'foodTimes'), Restaurant, 'Feed')}
                     {column(medBlocks, () => record(p.medField, 'medTimes'), Medication, 'Vetmedin')}
                 </>}
             </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 3, justifyContent: 'flex-start' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
                 {history.length === 0 && <Typography variant="caption" color="text.secondary">Nothing in the last 24 hours</Typography>}
                 {history.map((h) => (
-                    <Box key={h.label + h.t} sx={{ textAlign: 'left' }}>
-                        <Typography variant="body2">{h.label}</Typography>
-                        <Typography variant="caption" color="text.secondary">{formatTime(h.t)}</Typography>
-                    </Box>
+                    <Card key={h.label + h.t} variant="outlined" sx={{ textAlign: 'center' }}>
+                        <CardContent sx={{ py: 1, px: 2, '&:last-child': { pb: 1 } }}>
+                            <Typography variant="body2">{h.label}</Typography>
+                            <Typography variant="caption" color="text.secondary">{formatTime(h.t)}</Typography>
+                        </CardContent>
+                    </Card>
                 ))}
             </Box>
         </Box>;

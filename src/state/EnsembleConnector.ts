@@ -66,13 +66,16 @@ class EnsembleConnector {
             throw "Failed to create websocket";
         }
 
+
         this.sock.onclose = (e: CloseEvent) : any => {
+            this.stopHeartbeat();
             this.connected = false;
             console.debug("Websocket was closed");
         };
 
         this.sock.onmessage = (m: MessageEvent) => {
             console.debug("Received message", m);
+            this.lastReceived = Date.now();
             this.receive(m.data);
         };
 
@@ -83,7 +86,71 @@ class EnsembleConnector {
 
         this.sock.onopen = (e: Event) => {
             console.debug("Websocket connected");
+            this.startHeartbeat();
             then();
+        }
+    }
+
+    private static readonly PING_INTERVAL_MS = 10000;
+    private static readonly DEAD_AFTER_MS = 30000;
+
+    private heartbeatTimer : number | null = null;
+    private lastReceived : number = Date.now();
+
+    /**
+     * Browsers don't expose websocket ping/pong frames, and a dead TCP peer can leave the
+     * socket "open" indefinitely, so poll with an application-level message and treat
+     * prolonged silence as a closed connection.
+     */
+    private startHeartbeat() {
+        this.stopHeartbeat();
+        this.lastReceived = Date.now();
+
+        this.heartbeatTimer = window.setInterval(() => {
+            const silent = Date.now() - this.lastReceived;
+
+            if(silent > EnsembleConnector.DEAD_AFTER_MS) {
+                console.warn("No data from websocket for " + silent + "ms, closing");
+                this.forceClose();
+                return;
+            }
+
+            if(silent >= EnsembleConnector.PING_INTERVAL_MS && this.sock.readyState === WebSocket.OPEN) {
+                // Any reply (even an exception) counts as proof of life; the reply itself is ignored as an orphan.
+                this.sock.send(JSON.stringify({
+                    'id': Math.floor(Math.random() * 1000000000000).toString(),
+                    'source': '',
+                    'target': this.proxyId,
+                    'action': 'ping',
+                    'args': {},
+                    'expires': Math.ceil(Date.now() / 1000 + 60),
+                    'follows': false
+                }));
+            }
+        }, EnsembleConnector.PING_INTERVAL_MS / 2);
+    }
+
+    private stopHeartbeat() {
+        if(this.heartbeatTimer !== null) {
+            window.clearInterval(this.heartbeatTimer);
+            this.heartbeatTimer = null;
+        }
+    }
+
+    /**
+     * close() on a dead socket can take minutes to fire onclose, so invoke it ourselves.
+     */
+    private forceClose() {
+        const sock = this.sock;
+        const onclose = sock.onclose;
+
+        sock.onclose = null;
+        sock.onmessage = null;
+        sock.onerror = null;
+        sock.close();
+
+        if(onclose) {
+            onclose.call(sock, new CloseEvent("close", { code: 4000, reason: "Heartbeat timeout" }));
         }
     }
 
